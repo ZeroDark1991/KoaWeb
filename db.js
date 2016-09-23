@@ -11,7 +11,7 @@ const seqIns = new sequelize(config.database, config.username, config.password, 
     }
 })
 
-const Pet = seqIns.define('pet',{
+const Pet = seqIns.define('pet', {
     id: {
         type: sequelize.STRING(50),
         primaryKey: true
@@ -56,7 +56,8 @@ function tryFind(){
         result.forEach(item => {
             console.log(JSON.stringify(item))
             item.updatedAt = Date.now()
-            item.save()
+            // item.save()
+            item.destroy()
             .then((result)=>{
                 JSON.stringify(result)
             })
