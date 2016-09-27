@@ -1,3 +1,5 @@
+'use strict'
+
 const Koa = require('koa')
 const app = new Koa()
 const router = require('koa-router')()
@@ -5,16 +7,51 @@ const url = require('url')
 const path = require('path')
 const bodyParser = require('koa-bodyparser')
 const views = require('koa-views')
+const session = require('koa-session')
+const convert = require('koa-convert')
+
+app.keys=['secret-zerodark1991']
+
+app.use(convert(session(app)))
 
 app.use(async (ctx, next) => {
+    if(ctx.path == '/favicon.ico') return ctx.res.end()
+
     console.time(`${ctx.method}${ctx.url}`)
     ctx.type = 'text/html'
     await next() // 调用下一个middleware
     console.timeEnd(`${ctx.method}${ctx.url}`)
 })
 
+router.get('/set', async (ctx) => {
+    let userId = ctx.cookies.get('userid',{signed:true})
+    console.log(userId)
+    if(!userId){
+        ctx.body = 'can not get cookies'
+    }else{
+        ctx.body = userId
+    }
+})
+
+router.get('/login', async (ctx) => {
+    ctx.session.id = '111233333444'
+    ctx.session.maxAge = 360000
+    ctx.body = '登陆成功'
+})
+
+router.get('/logout', async (ctx) => {
+    ctx.session = null
+    ctx.body = '退出成功'
+})
+
 router.get('/', async (ctx) => {
-    await ctx.render('home')
+    if(ctx.session.id){
+        console.log(ctx.session.maxAge)
+        await ctx.render('home')
+    }else{
+        ctx.redirect('/login')
+        ctx.body = 'redirecting to login page'
+    }
 })
 
 router.post('/signin', async (ctx) => {
